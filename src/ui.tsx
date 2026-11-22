@@ -1,6 +1,6 @@
 import {type ReactNode,useEffect,useId,useState} from 'react'
 import {Link,NavLink,useLocation,useNavigate} from 'react-router-dom'
-import {ArrowDown,ArrowRight,ArrowUpRight,ChevronDown,ChevronLeft,ChevronRight,Compass,Flag,Info,LifeBuoy,Menu,Search,ShieldCheck,Waves,X} from 'lucide-react'
+import {ArrowDown,ArrowRight,ArrowUpRight,ChevronDown,ChevronLeft,ChevronRight,Compass,Camera,Copy,Flag,Globe2,Info,LifeBuoy,Menu,MessageCircle,Search,Share2,ShieldCheck,SquarePlay,Waves,X} from 'lucide-react'
 import Markdown from 'react-markdown'
 import {assetUrl,contentPath,journalImage,readMinutes,type Config,type Item} from './api'
 import {directory,faq,legalNote,name,paths,proposedNotice,type Resource} from './data'
@@ -28,7 +28,7 @@ export function useSeo(title:string,description:string,privatePage=false,image?:
 }
 
 export function Brand(){
-  return <Link className="brand" to="/" aria-label={name+' home'}><img src="/crest.webp" alt="" width="51" height="55"/><span><small>Provisional Committee for the<br/>Establishment of the</small><strong>Nigerian Coast Guard <abbr title={name}>PCNCG</abbr></strong></span></Link>
+  return <Link className="brand" to="/" aria-label={name+' home'}><img src="/crest.webp" alt="" width="65" height="65"/><span><small>Provisional Committee for the Establishment of the</small><strong>Nigerian Coast Guard</strong><abbr title={name}>PCNCG</abbr></span></Link>
 }
 const morePaths=directory.filter(([path])=>['/community','/emergency','/documents','/map','/gallery','/careers','/consultation','/partnerships','/faq'].includes(path))
 
@@ -48,7 +48,10 @@ export function Header({customMenu}:{customMenu:Item[]}){
   },[])
   return <>
     <a href="#main" className="skip">Skip to content</a>
-    <div className="statusbar"><div className="wrap status-inner"><span><i/> {proposedNotice}</span><Link to="/legislation">Legislative status <ArrowUpRight size={13}/></Link></div></div>
+    <div className="statusbar"><div className="wrap status-inner"><span><i/> {proposedNotice}</span><div className="status-actions"><Link to="/legislation">Legislative status <ArrowUpRight size={13}/></Link><details className="header-share" onKeyDown={event=>{if(event.key==='Escape'&&event.currentTarget.open){event.currentTarget.open=false;event.currentTarget.querySelector('summary')?.focus()}}}>
+      <summary aria-label="Share the PCNCG website"><Share2 size={15}/> <span>Share</span></summary>
+      <div className="share-panel"><p>Share the PCNCG website</p><Share title={name} path="/" compact/></div>
+    </details></div></div></div>
     <header className="site-header"><div className="wrap nav-inner">
       <Brand/>
       <nav aria-label="Primary navigation" className={open?'nav-menu is-open':'nav-menu'}>
@@ -73,15 +76,36 @@ export function Header({customMenu}:{customMenu:Item[]}){
   </>
 }
 
+const facebookIcon=<span className="brand-glyph">f</span>
+const linkedInIcon=<span className="brand-glyph linkedin-glyph">in</span>
+
+function profileIcon(url:string){
+  let host
+  try {
+    const parsed=new URL(url)
+    if(parsed.protocol!=='https:'||parsed.username||parsed.password)return null
+    host=parsed.hostname.replace(/^www\./,'')
+  } catch {return null}
+  if(host==='facebook.com'||host==='fb.com')return facebookIcon
+  if(host==='instagram.com')return <Camera size={18}/>
+  if(host==='linkedin.com')return linkedInIcon
+  if(host==='youtube.com'||host==='youtu.be')return <SquarePlay size={18}/>
+  if(host==='x.com'||host==='twitter.com')return <span className="x-icon">𝕏</span>
+  if(host==='wa.me'||host==='whatsapp.com'||host==='chat.whatsapp.com')return <MessageCircle size={18}/>
+  return <Globe2 size={18}/>
+}
 export function Footer({config,social}:{config?:Config;social:Item[]}){
+  const profiles=social.flatMap(item=>{
+    const icon=profileIcon(item.url)
+    return icon?[{item,icon}]:[]
+  })
   return <footer className="footer"><div className="wrap">
     <div className="footer-grid">
       <div><Brand/><p>{legalNote}</p><span className="footer-caption">Proposed emblem · pending formal approval</span></div>
       <div><h2>Explore</h2><Link to="/about">About the proposal</Link><Link to="/mandate">Proposed mandate</Link><Link to="/legislation">Legislative journey</Link><Link to="/news">Newsroom</Link><Link to="/journal">Maritime Journal</Link><Link to="/gallery">Media gallery</Link></div>
       <div><h2>Public information</h2><Link to="/safety">Maritime safety</Link><Link to="/emergency">Emergency information</Link><Link to="/map">Maritime map</Link><Link to="/documents">Document library</Link><Link to="/faq">Frequently asked questions</Link></div>
       <div><h2>Get in touch</h2><Link to="/contact">Public enquiries</Link><Link to="/partnerships">Partnerships</Link><Link to="/consultation">Consultations</Link><Link to="/careers">Careers</Link>
-        {social.filter(item=>item.url).map(item=><a key={item.id} href={item.url} rel="noopener noreferrer">{item.title} <ArrowUpRight size={13}/></a>)}
-        {social.length===0&&<small>Social links pending authorization.</small>}
+        {profiles.length>0&&<div className="profile-links" role="group" aria-label="PCNCG social profiles">{profiles.map(({item,icon})=><a key={item.id} className="social-icon" href={item.url} target="_blank" rel="noopener noreferrer" aria-label={item.title} title={item.title}>{icon}</a>)}</div>}
       </div>
     </div>
     {config?.settings.footerNote&&<p>{config.settings.footerNote}</p>}
@@ -135,10 +159,29 @@ export function Pagination({page,total,limit,setPage}:{page:number;total:number;
   if(pages<=1)return null
   return <nav className="pagination" aria-label="Page navigation"><button className="button outline" disabled={page<=1} onClick={()=>setPage(page-1)}><ChevronLeft size={17}/> Previous</button><span>Page {page} of {pages}</span><button className="button outline" disabled={page>=pages} onClick={()=>setPage(page+1)}>Next <ChevronRight size={17}/></button></nav>
 }
-export function Share({title}:{title:string}){
-  const [copy,setCopy]=useState(false)
-  const url=window.location.href
-  return <div className="share"><span>Share</span><a href={'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(url)} rel="noreferrer">Facebook</a><a href={'https://twitter.com/intent/tweet?text='+encodeURIComponent(title)+'&url='+encodeURIComponent(url)} rel="noreferrer">X</a><a href={'https://www.linkedin.com/sharing/share-offsite/?url='+encodeURIComponent(url)} rel="noreferrer">LinkedIn</a><button className="button outline" onClick={async()=>{try{await navigator.clipboard.writeText(url);setCopy(true)}catch{setCopy(false)}}}>{copy?'Link copied':'Copy link'}</button></div>
+export function Share({title,path,compact=false}:{title:string;path?:string;compact?:boolean}){
+  const {pathname}=useLocation()
+  const url=new URL(path||pathname,window.location.origin).href
+  const [clipboard,setClipboard]=useState<{url:string;state:'copied'|'manual'}>()
+  const link=encodeURIComponent(url)
+  const message=encodeURIComponent(title+' '+url)
+  const entries=[
+    {label:'WhatsApp',url:'https://wa.me/?text='+message,icon:<MessageCircle size={18}/>},
+    {label:'Facebook',url:'https://www.facebook.com/sharer/sharer.php?u='+link,icon:facebookIcon},
+    {label:'X',url:'https://twitter.com/intent/tweet?text='+encodeURIComponent(title)+'&url='+link,icon:<span className="x-icon">𝕏</span>},
+    {label:'LinkedIn',url:'https://www.linkedin.com/sharing/share-offsite/?url='+link,icon:linkedInIcon},
+  ]
+  const state=clipboard?.url===url?clipboard.state:undefined
+  return <div className={'share'+(compact?' compact-share':'')} role="group" aria-label="Sharing options">
+    {!compact&&<span>Share</span>}
+    {entries.map(entry=><a key={entry.label} className="social-icon" href={entry.url} target="_blank" rel="noopener noreferrer" title={'Share on '+entry.label} aria-label={'Share on '+entry.label}>{entry.icon}</a>)}
+    <button type="button" className="social-icon" aria-label="Copy link" title="Copy link" onClick={async()=>{
+      try{await navigator.clipboard.writeText(url);setClipboard({url,state:'copied'})}
+      catch{setClipboard({url,state:'manual'})}
+    }}><Copy size={17}/></button>
+    {state==='copied'&&<span className="share-feedback" role="status">Link copied</span>}
+    {state==='manual'&&<label className="share-feedback">Copy this link<input readOnly value={url} onFocus={event=>event.currentTarget.select()}/></label>}
+  </div>
 }
 export function SearchField({label,onSearch,initial='',placeholder='Search…'}:{label:string;onSearch:(q:string)=>void;initial?:string;placeholder?:string}){
   const id=useId()

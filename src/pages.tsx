@@ -166,7 +166,7 @@ export function GlobalSearch(){
     ...sourceDocs.map(item=>({url:item.url,title:item.title,category:item.category,body:item.source})),
     ...faq.map(([title,body])=>({url:'/faq',title,category:'FAQ',body})),
   ]
-  const matches=q&&page===1?index.filter(item=>(item.title+' '+item.category+' '+item.body).toLowerCase().includes(q.toLowerCase())&&(!category||item.category===category)): []
+  const matches=q&&page===1?index.filter(item=>(item.title+' '+item.category+' '+item.body+' '+item.url).toLowerCase().includes(q.toLowerCase())&&(!category||item.category===category)): []
   const update=(value:string,cat='',number=1)=>setQuery(value?{q:value,...(cat?{category:cat}:{}),...(number>1?{page:String(number)}:{})}:{})
   return <><PageHeader eyebrow="Search" title="Search public information"/><section className="section wrap narrow">
     <SearchField key={q} label="Search all public information" initial={q} onSearch={update}/>

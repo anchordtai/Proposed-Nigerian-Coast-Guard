@@ -5,7 +5,7 @@
   "outputDirectory": "dist",
   "rewrites": [
     { "source": "/api/:path*", "destination": "https://proposed-nigerian-coast-guard-api.onrender.com/api/:path*" },
-    { "source": "/:page(about|mandate|legislation|safety|news|community|documents|emergency|faq|map|gallery|contact|careers|consultation|partnerships|privacy|accessibility)", "destination": "/:page/index.html" },
+    { "source": "/:page(about|mandate|legislation|safety|news|journal|community|documents|emergency|faq|map|gallery|contact|careers|consultation|partnerships|privacy|accessibility)", "destination": "/:page/index.html" },
     { "source": "/:path((?!api/|assets/|media/|favicon.png|crest.webp|robots.txt|sitemap.xml).*)", "destination": "/index.html" }
   ],
   "headers": [

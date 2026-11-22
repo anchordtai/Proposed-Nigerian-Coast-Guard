@@ -76,7 +76,7 @@ ul,ol{padding-left:1.25rem}
 .eyebrow{display:flex;gap:11px;align-items:center;color:var(--gold-dark);font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;font-weight:800;margin-bottom:15px}
 .eyebrow span{display:inline-block;width:22px;height:1px;background:currentColor}
 .hero-content .eyebrow,.page-hero .eyebrow,.ocean-band .eyebrow{color:var(--gold)}
-.hero-title{font-size:clamp(3.2rem,5.65vw,5.35rem);line-height:1.01;letter-spacing:-.058em;font-weight:800;margin:.24em 0 .29em}
+.hero-title{font-size:clamp(3rem,4.55vw,4.65rem);text-wrap:balance;line-height:1.04;letter-spacing:-.058em;font-weight:800;margin:.24em 0 .29em}
 .hero-title em{display:block;color:var(--gold);font-style:normal}
 .hero-content>p:not(.eyebrow){color:#eef2ef;font-size:clamp(1rem,1.5vw,1.23rem);max-width:480px;margin-bottom:28px}
 .action-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}

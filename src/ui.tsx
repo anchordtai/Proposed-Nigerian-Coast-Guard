@@ -1,6 +1,6 @@
 import {type ReactNode,useEffect,useId,useState} from 'react'
 import {Link,NavLink,useLocation,useNavigate} from 'react-router-dom'
-import {ArrowDown,ArrowRight,ArrowUpRight,ChevronDown,ChevronLeft,ChevronRight,Compass,Camera,Copy,Flag,Globe2,Info,LifeBuoy,Menu,MessageCircle,Search,Share2,ShieldCheck,SquarePlay,Waves,X} from 'lucide-react'
+import {ArrowDown,ArrowRight,ArrowUpRight,ChevronDown,ChevronLeft,ChevronRight,Camera,Copy,Flag,Globe2,Info,LifeBuoy,Menu,MessageCircle,Pause,Play,Search,Share2,ShieldCheck,SquarePlay,Waves,X} from 'lucide-react'
 import Markdown from 'react-markdown'
 import {assetUrl,contentPath,journalImage,readMinutes,type Config,type Item} from './api'
 import {directory,faq,legalNote,name,paths,proposedNotice,type Resource} from './data'
@@ -28,7 +28,7 @@ export function useSeo(title:string,description:string,privatePage=false,image?:
 }
 
 export function Brand(){
-  return <Link className="brand" to="/" aria-label={name+' home'}><img src="/crest.webp" alt="" width="65" height="65"/><span><small>Provisional Committee for the Establishment of the</small><strong>Nigerian Coast Guard</strong><abbr title={name}>PCNCG</abbr></span></Link>
+  return <Link className="brand" to="/" aria-label={name+' home'}><img src="/crest.webp" alt="" width="65" height="65"/><span><small>Provisional Committee for the Establishment of the</small><strong>Nigerian Coast Guard</strong><abbr title={name}>PC-NCG</abbr></span></Link>
 }
 const morePaths=directory.filter(([path])=>['/community','/emergency','/documents','/map','/gallery','/careers','/consultation','/partnerships','/faq'].includes(path))
 
@@ -49,8 +49,8 @@ export function Header({customMenu}:{customMenu:Item[]}){
   return <>
     <a href="#main" className="skip">Skip to content</a>
     <div className="statusbar"><div className="wrap status-inner"><span><i/> {proposedNotice}</span><div className="status-actions"><Link to="/legislation">Legislative status <ArrowUpRight size={13}/></Link><details className="header-share" onKeyDown={event=>{if(event.key==='Escape'&&event.currentTarget.open){event.currentTarget.open=false;event.currentTarget.querySelector('summary')?.focus()}}}>
-      <summary aria-label="Share the PCNCG website"><Share2 size={15}/> <span>Share</span></summary>
-      <div className="share-panel"><p>Share the PCNCG website</p><Share title={name} path="/" compact/></div>
+      <summary aria-label="Share the PC-NCG website"><Share2 size={15}/> <span>Share</span></summary>
+      <div className="share-panel"><p>Share the PC-NCG website</p><Share title={name} path="/" compact/></div>
     </details></div></div></div>
     <header className="site-header"><div className="wrap nav-inner">
       <Brand/>
@@ -105,7 +105,7 @@ export function Footer({config,social}:{config?:Config;social:Item[]}){
       <div><h2>Explore</h2><Link to="/about">About the proposal</Link><Link to="/mandate">Proposed mandate</Link><Link to="/legislation">Legislative journey</Link><Link to="/news">Newsroom</Link><Link to="/journal">Maritime Journal</Link><Link to="/gallery">Media gallery</Link></div>
       <div><h2>Public information</h2><Link to="/safety">Maritime safety</Link><Link to="/emergency">Emergency information</Link><Link to="/map">Maritime map</Link><Link to="/documents">Document library</Link><Link to="/faq">Frequently asked questions</Link></div>
       <div><h2>Get in touch</h2><Link to="/contact">Public enquiries</Link><Link to="/partnerships">Partnerships</Link><Link to="/consultation">Consultations</Link><Link to="/careers">Careers</Link>
-        {profiles.length>0&&<div className="profile-links" role="group" aria-label="PCNCG social profiles">{profiles.map(({item,icon})=><a key={item.id} className="social-icon" href={item.url} target="_blank" rel="noopener noreferrer" aria-label={item.title} title={item.title}>{icon}</a>)}</div>}
+        {profiles.length>0&&<div className="profile-links" role="group" aria-label="PC-NCG social profiles">{profiles.map(({item,icon})=><a key={item.id} className="social-icon" href={item.url} target="_blank" rel="noopener noreferrer" aria-label={item.title} title={item.title}>{icon}</a>)}</div>}
       </div>
     </div>
     {config?.settings.footerNote&&<p>{config.settings.footerNote}</p>}
@@ -187,16 +187,65 @@ export function SearchField({label,onSearch,initial='',placeholder='Search…'}:
   const id=useId()
   return <form className="search-field" role="search" onSubmit={e=>{e.preventDefault();onSearch(String(new FormData(e.currentTarget).get('q')??'').trim())}}><label htmlFor={id} className="sr-only">{label}</label><input id={id} name="q" maxLength={120} defaultValue={initial} placeholder={placeholder}/><button className="button dark"><Search size={17}/> Search</button></form>
 }
+const heroSlides = [
+  {label:'Maritime governance',image:'maritime-hero',mobile:'maritime-hero-mobile',lead:'Safeguarding Nigeria’s Civil',accent:'Maritime Governance Future.',
+    summary:'A vision for safer waters, accountable maritime institutions, and stronger coastal communities.',link:'/about',action:'Explore Our Vision'},
+  {label:'The proposed framework',image:'hero-governance',lead:'Clear Rules.',accent:'Stronger Institutions.',
+    summary:'Explore the proposed framework for civilian maritime governance, public accountability and coordination at sea.',link:'/legislation',action:'Follow the Legislative Journey'},
+  {label:'Safety and preparedness',image:'hero-safety',lead:'Safer Waters.',accent:'Every Life Matters.',
+    summary:'Find maritime safety information and practical resources to help prepare for emergencies on the water.',link:'/safety',action:'Explore Maritime Safety'},
+  {label:'Coastal communities',image:'hero-community',lead:'Thriving Coasts.',accent:'Stronger Communities.',
+    summary:'Discover resources for coastal communities and the people whose livelihoods depend on Nigeria’s waters.',link:'/community',action:'Explore Community Resources'},
+  {label:'Marine stewardship',image:'hero-stewardship',lead:'Protect Our Waters.',accent:'Preserve Our Future.',
+    summary:'Explore a proposed approach to marine conservation, pollution prevention and environmental stewardship.',link:'/mandate#priority-2',action:'Explore Environmental Priorities'},
+] as const
+
 export function HomeHero({config}:{config?:Config}){
-  return <section className="home-hero">
-    <picture className="hero-picture"><source media="(max-width: 680px)" srcSet="/media/maritime-hero-mobile.webp"/><img src="/media/maritime-hero.webp" width="1760" height="990" alt="" fetchPriority="high"/></picture>
-    <div className="wrap hero-inner"><div className="hero-content">
-      <Eyebrow>Nigeria’s maritime future</Eyebrow>
-      <h1>{config?.settings.heroTitle||<>Safeguarding<br/>Nigeria’s<br className="hero-break"/> <em>Maritime Future.</em></>}</h1>
-      <p>{config?.settings.heroSummary||'A vision for safer waters, stronger coastal communities, and a more secure maritime future for Nigeria.'}</p>
-      <div className="action-row"><Link className="button gold" to="/about">Explore Our Vision <ArrowRight size={19}/></Link><Link className="button light-outline" to="/safety"><LifeBuoy size={18}/> Maritime Safety</Link></div>
-    </div>
-    <div className="hero-bottom"><a href="#priorities"><ArrowDown size={16}/> Explore the platform</a><span><Compass size={17}/> Nigeria · Gulf of Guinea</span></div>
+  const [active,setActive]=useState(0)
+  const [playing,setPlaying]=useState(()=>!window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+  const [hovered,setHovered]=useState(false)
+  const count=heroSlides.length
+  const isFirst=active===0
+  const current=heroSlides[active]
+  const customTitle=config?.settings.heroTitle
+  const heading=customTitle||heroSlides[0].lead+' '+heroSlides[0].accent
+  useEffect(()=>{
+    const motion=window.matchMedia('(prefers-reduced-motion: reduce)')
+    const respectMotion=()=>{if(motion.matches)setPlaying(false)}
+    motion.addEventListener('change',respectMotion)
+    return()=>motion.removeEventListener('change',respectMotion)
+  },[])
+  useEffect(()=>{
+    if(!playing||hovered)return
+    const timer=window.setTimeout(()=>setActive((active+1)%count),9000)
+    return()=>window.clearTimeout(timer)
+  },[active,count,hovered,playing])
+  const show=(index:number)=>{setPlaying(false);setActive((index+count)%count)}
+  return <section className="home-hero" aria-label="Maritime vision" aria-roledescription="carousel"
+    onMouseEnter={()=>setHovered(true)} onMouseLeave={()=>setHovered(false)}
+    onFocusCapture={event=>{if(!event.target.closest('[data-rotation-toggle]'))setPlaying(false)}}>
+    {heroSlides.map((slide,index)=><picture key={slide.image} className={'hero-picture'+(index===active?' is-active':'')} aria-hidden="true">
+      {'mobile' in slide&&<source media="(max-width: 680px)" srcSet={'/media/'+slide.mobile+'.webp'}/>}
+      <img src={'/media/'+slide.image+'.webp'} width="1760" height="990" alt="" loading={index===0?'eager':'lazy'} fetchPriority={index===0?'high':'low'}/>
+    </picture>)}
+    <div className="wrap hero-inner">
+      <div className="hero-content" aria-live={playing?'off':'polite'} aria-atomic="true">
+        <Eyebrow>{current.label}</Eyebrow>
+        <h1 className={isFirst?'hero-title':'sr-only'}>{isFirst&&!customTitle?<>{heroSlides[0].lead} <em>{heroSlides[0].accent}</em></>:heading}</h1>
+        {!isFirst&&<h2 className="hero-title">{current.lead} <em>{current.accent}</em></h2>}
+        <p>{isFirst&&config?.settings.heroSummary||current.summary}</p>
+        <div className="action-row"><Link className="button gold" to={current.link}>{current.action} <ArrowRight size={19}/></Link>
+        {isFirst&&<Link className="button light-outline" to="/safety"><LifeBuoy size={18}/> Maritime Safety</Link>}</div>
+      </div>
+      <div className="hero-bottom">
+        <a href="#priorities"><ArrowDown size={16}/> Explore the platform</a>
+        <div className="hero-controls" role="group" aria-label="Slide controls">
+          <button type="button" data-rotation-toggle aria-label={playing?'Pause slides':'Play slides'} onClick={()=>setPlaying(value=>!value)}>{playing?<Pause size={18}/>:<Play size={18}/>}</button>
+          <button type="button" aria-label="Previous slide" onClick={()=>show(active-1)}><ChevronLeft size={20}/></button>
+          {heroSlides.map((slide,index)=><button className="hero-dot" type="button" key={slide.label} aria-label={'Slide '+(index+1)+': '+slide.label} aria-current={active===index?'true':undefined} onClick={()=>show(index)}><span/></button>)}
+          <button type="button" aria-label="Next slide" onClick={()=>show(active+1)}><ChevronRight size={20}/></button>
+        </div>
+      </div>
     </div>
   </section>
 }

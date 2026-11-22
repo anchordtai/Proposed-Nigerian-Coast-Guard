@@ -1,4 +1,4 @@
-export const name = 'Provisional Committee for the Establishment of the Nigerian Coast Guard (PCNCG)'
+export const name = 'Provisional Committee for the Establishment of the Nigerian Coast Guard (PC-NCG)'
 export const defaultEmail = 'pcenigeriancoastguard@gmail.com'
 export const nass = 'https://nass.gov.ng/page/notices.html'
 export const nimasa = 'https://nimasa.gov.ng/what-we-do/maritime-safety-security/'

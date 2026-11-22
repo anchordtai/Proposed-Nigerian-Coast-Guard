@@ -2,7 +2,7 @@ import {type ReactNode,useEffect,useId,useState} from 'react'
 import {Link,NavLink,useLocation,useNavigate} from 'react-router-dom'
 import {ArrowDown,ArrowRight,ArrowUpRight,ChevronDown,ChevronLeft,ChevronRight,Compass,Flag,Info,LifeBuoy,Menu,Search,ShieldCheck,Waves,X} from 'lucide-react'
 import Markdown from 'react-markdown'
-import {assetUrl,type Config,type Item} from './api'
+import {assetUrl,contentPath,journalImage,readMinutes,type Config,type Item} from './api'
 import {directory,faq,legalNote,name,paths,proposedNotice,type Resource} from './data'
 
 export function useSeo(title:string,description:string,privatePage=false,image?:string) {
@@ -77,7 +77,7 @@ export function Footer({config,social}:{config?:Config;social:Item[]}){
   return <footer className="footer"><div className="wrap">
     <div className="footer-grid">
       <div><Brand/><p>{legalNote}</p><span className="footer-caption">Proposed emblem · pending formal approval</span></div>
-      <div><h2>Explore</h2><Link to="/about">About the proposal</Link><Link to="/mandate">Proposed mandate</Link><Link to="/legislation">Legislative journey</Link><Link to="/news">Newsroom</Link><Link to="/gallery">Media gallery</Link></div>
+      <div><h2>Explore</h2><Link to="/about">About the proposal</Link><Link to="/mandate">Proposed mandate</Link><Link to="/legislation">Legislative journey</Link><Link to="/news">Newsroom</Link><Link to="/journal">Maritime Journal</Link><Link to="/gallery">Media gallery</Link></div>
       <div><h2>Public information</h2><Link to="/safety">Maritime safety</Link><Link to="/emergency">Emergency information</Link><Link to="/map">Maritime map</Link><Link to="/documents">Document library</Link><Link to="/faq">Frequently asked questions</Link></div>
       <div><h2>Get in touch</h2><Link to="/contact">Public enquiries</Link><Link to="/partnerships">Partnerships</Link><Link to="/consultation">Consultations</Link><Link to="/careers">Careers</Link>
         {social.filter(item=>item.url).map(item=><a key={item.id} href={item.url} rel="noopener noreferrer">{item.title} <ArrowUpRight size={13}/></a>)}
@@ -114,9 +114,12 @@ export function Card({item,base}:{item:Resource;base:string}){
   </article>
 }
 export function CmsCard({item}:{item:Item}){
+  const to=contentPath(item)
+  const isJournal=item.kind==='journal'
+  const image=isJournal?journalImage(item):item.image_id?assetUrl(item.image_id):undefined
   return <article className="card">
-    {item.image_id&&<Link to={'/content/'+item.kind+'/'+item.slug} className="card-image" tabIndex={-1} aria-hidden><img src={assetUrl(item.image_id)} loading="lazy" alt=""/></Link>}
-    <div className="card-body"><p className="card-kicker">{item.category||item.kind}{item.published_at&&' · '+prettyDate(item.published_at)}</p><h3><Link to={'/content/'+item.kind+'/'+item.slug}>{item.title}</Link></h3>{item.subtitle&&<p>{item.subtitle}</p>}<TextLink to={'/content/'+item.kind+'/'+item.slug}>Read more</TextLink></div>
+    {image&&<Link to={to} className="card-image" tabIndex={-1} aria-hidden><img src={image} loading="lazy" alt=""/></Link>}
+    <div className="card-body"><p className="card-kicker">{item.category||(isJournal?'Maritime Journal':item.kind)}{item.published_at&&' · '+prettyDate(item.published_at)}{isJournal&&' · '+readMinutes(item.body)+' min read'}</p><h3><Link to={to}>{item.title}</Link></h3>{item.subtitle&&<p>{item.subtitle}</p>}<TextLink to={to}>Read more</TextLink></div>
   </article>
 }
 export function prettyDate(value:string){return new Intl.DateTimeFormat('en-NG',{dateStyle:'medium',timeZone:'Africa/Lagos'}).format(new Date(value))}

@@ -3,7 +3,7 @@ import {createRoot} from 'react-dom/client'
 import {BrowserRouter,Route,Routes,useLocation} from 'react-router-dom'
 import {params,useApi,type Config,type Item,type Page} from './api'
 import {Contact,TokenPage} from './forms'
-import {About,Accessibility,Authorised,CmsDetail,Community,Documents,Emergency,FAQs,Gallery,GlobalSearch,Home,Legislation,Listing,Mandate,Missing,Partnerships,Privacy,StaticArticle} from './pages'
+import {About,Accessibility,Authorised,CmsDetail,Community,Documents,Emergency,FAQs,Gallery,GlobalSearch,Home,Journal,Legislation,Listing,Mandate,Missing,Partnerships,Privacy,StaticArticle} from './pages'
 import {Footer,Header} from './ui'
 import '@fontsource-variable/dm-sans'
 import '@fontsource-variable/manrope'
@@ -37,6 +37,8 @@ function App(){
     <Route path="/safety/:slug" element={<StaticArticle type="safety"/>}/>
     <Route path="/news" element={<Listing key="news" type="news"/>}/>
     <Route path="/news/:slug" element={<StaticArticle type="news"/>}/>
+    <Route path="/journal" element={<Journal/>}/>
+    <Route path="/journal/:slug" element={<CmsDetail journal/>}/>
     <Route path="/community" element={<Community/>}/>
     <Route path="/documents" element={<Documents/>}/>
     <Route path="/emergency" element={<Emergency/>}/>

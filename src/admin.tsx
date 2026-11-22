@@ -8,9 +8,9 @@ import {Notice,PageHeader,Pagination,RichText,SearchField,prettyDate,useSeo} fro
 const failure=(reason:unknown)=>reason instanceof Error?reason.message:'The request failed.'
 const kinds:Record<string,string>={
   page:'pages',faq:'pages',menu:'settings',homepage:'settings',social:'settings',document:'documents',gallery:'media',video:'media',
-  milestone:'pages',consultation:'submissions',job:'submissions',article:'editorial',news:'editorial',press:'editorial',statement:'editorial',advisory:'editorial',announcement:'editorial',
+  milestone:'pages',consultation:'submissions',job:'submissions',article:'editorial',journal:'editorial',news:'editorial',press:'editorial',statement:'editorial',advisory:'editorial',announcement:'editorial',
 }
-const labels:Record<string,string>={faq:'FAQs',milestone:'Legislative timeline',job:'Job opportunities',homepage:'Homepage sections',consultation:'Consultations',menu:'Navigation links',social:'Social links',press:'Press releases'}
+const labels:Record<string,string>={journal:'Journal article',faq:'FAQs',milestone:'Legislative timeline',job:'Job opportunities',homepage:'Homepage sections',consultation:'Consultations',menu:'Navigation links',social:'Social links',press:'Press releases'}
 const statusOptions=['new','reviewed','in_progress','resolved','archived']
 const staffRoles=['Administrator','Editor','Communications Officer','Content Manager','Public Engagement Officer','Document Manager']
 const toLocalDate=(value?:string|null)=>value?new Date(new Date(value).getTime()-new Date(value).getTimezoneOffset()*60_000).toISOString().slice(0,16):''
@@ -111,22 +111,22 @@ function ContentEditor({item,allowed,staff,close,done}:{item?:Item;allowed:strin
   </Dialog>
 }
 
-function Content({staff}:{staff:Staff}){
+function Content({staff,journal=false}:{staff:Staff;journal?:boolean}){
   const [q,setQ]=useState('')
-  const [kind,setKind]=useState('')
+  const [kind,setKind]=useState(journal?'journal':'')
   const [page,setPage]=useState(1)
   const [revision,rev]=useState(0)
   const [edit,setEdit]=useState<Item|'new'|null>(null)
   const [selected,setSelected]=useState<string[]>([])
   const [confirm,setConfirm]=useState<{label:string;fn:()=>Promise<unknown>}|null>(null)
   const action=useAction()
-  const allowed=Object.keys(kinds).filter(key=>staff.permissions.includes(kinds[key]))
+  const allowed=Object.keys(kinds).filter(key=>(!journal||key==='journal')&&staff.permissions.includes(kinds[key]))
   const publish=staff.permissions.includes('publish')
   const result=useApi<Page<Item>>('/admin/content'+params({q,kind,page,limit:12}),revision)
   const refresh=()=>{rev(n=>n+1);setSelected([])}
-  return <><div className="admin-heading"><h2>Content management</h2><button className="button dark" onClick={()=>setEdit('new')}>Create content</button></div>
+  return <><div className="admin-heading"><h2>{journal?"Maritime Journal":"Content management"}</h2><button className="button dark" onClick={()=>setEdit('new')}>{journal?"Create article":"Create content"}</button></div>
     <SearchField label="Search content" onSearch={value=>{setQ(value);setPage(1);setSelected([])}}/>
-    <div className="filter-row"><label className="inline-field">Type<select value={kind} onChange={e=>{setKind(e.target.value);setPage(1);setSelected([])}}><option value="">All types</option>{allowed.map(type=><option key={type} value={type}>{labels[type]||type}</option>)}</select></label>
+    <div className="filter-row">{!journal&&<label className="inline-field">Type<select value={kind} onChange={e=>{setKind(e.target.value);setPage(1);setSelected([])}}><option value="">All types</option>{allowed.map(type=><option key={type} value={type}>{labels[type]||type}</option>)}</select></label>}
     {publish&&selected.length>0&&<button className="button outline compact" onClick={()=>setConfirm({label:'Archive selected items',fn:()=>request('/admin/content/bulk',post({ids:selected,status:'archived'}))})}>Archive {selected.length}</button>}</div>
     <ResultState {...result} length={result.data?.total||0}/>
     {result.data?.items.length?<div className="table-wrap"><table><thead><tr>{publish&&<th scope="col">Select</th>}<th scope="col">Title</th><th scope="col">Type</th><th scope="col">Status</th><th scope="col">Actions</th></tr></thead><tbody>
@@ -263,6 +263,7 @@ export default function Admin(){
   const items:{label:string;icon:ReactNode;visible:boolean}[]=[
     {label:'Overview',icon:<LayoutDashboard size={17}/>,visible:true},
     {label:'Content',icon:<FileText size={17}/>,visible:!!staff&&Object.values(kinds).some(key=>staff.permissions.includes(key))},
+    {label:'Journal',icon:<BookOpen size={17}/>,visible:!!staff?.permissions.includes('editorial')},
     {label:'Media',icon:<ImagePlus size={17}/>,visible:!!staff?.permissions.includes('media')},
     {label:'Enquiries',icon:<Mail size={17}/>,visible:!!staff?.permissions.includes('enquiries')},
     {label:'Submissions',icon:<ClipboardList size={17}/>,visible:!!staff?.permissions.includes('submissions')},
@@ -276,7 +277,7 @@ export default function Admin(){
       session.status===401?<Login onLogin={()=>rev(n=>n+1)}/>:<div className="section wrap narrow"><Notice>The administrator service is temporarily unavailable.</Notice></div>:
       <section className="section wrap admin-shell">
         <aside className="admin-sidebar"><p><strong>{staff.email}</strong><small>{staff.roles.join(', ')}</small></p><nav aria-label="Admin areas">{items.filter(item=>item.visible).map(item=><button key={item.label} aria-pressed={view===item.label} onClick={()=>setView(item.label)}>{item.icon}{item.label}</button>)}</nav><button className="button outline" disabled={action.busy} onClick={()=>void action.act(async()=>{await request('/admin/logout',post({}));setView('Overview');rev(n=>n+1)})}><LogOut size={16}/> Sign out</button><Feedback state={action}/></aside>
-        <div className="admin-main">{view==='Overview'?<Overview/>:view==='Content'?<Content staff={staff}/>:view==='Media'?<Media/>:view==='Users'?<UsersView/>:view==='Settings'?<SettingsView/>:view==='Audit'?<Audit/>:<Queue key={view} queue={view.toLowerCase()}/>}</div>
+        <div className="admin-main">{view==='Overview'?<Overview/>:view==='Content'||view==='Journal'?<Content key={view} staff={staff} journal={view==='Journal'}/>:view==='Media'?<Media/>:view==='Users'?<UsersView/>:view==='Settings'?<SettingsView/>:view==='Audit'?<Audit/>:<Queue key={view} queue={view.toLowerCase()}/>}</div>
       </section>}
   </>
 }

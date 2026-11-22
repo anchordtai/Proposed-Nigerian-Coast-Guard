@@ -40,6 +40,12 @@ export type Item = {
   seo_title:string;seo_description:string;milestone_status:string;event_date:string|null;
   deadline:string|null;position:number;status:string;published_at:string|null;updated_at:string|null;
 }
+export function contentPath(item:Pick<Item,'kind'|'slug'>) {
+  return (item.kind==='journal'?'/journal/':'/content/'+item.kind+'/')+encodeURIComponent(item.slug)
+}
+export const journalImage=(item:Item)=>item.image_id?assetUrl(item.image_id):'/media/gulf.webp'
+export const readMinutes=(body:string)=>Math.max(1,Math.ceil(body.trim().split(/\s+/u).length/220))
+
 export type Page<T>={items:T[];total:number;page:number}
 export type Config={engagement:boolean;newsletter:boolean;consultation:boolean;recruitment:boolean;settings:Record<string,string>}
 export type Staff={id:string;email:string;roles:string[];permissions:string[]}

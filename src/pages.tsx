@@ -1,14 +1,14 @@
 import {useState} from 'react'
-import {Link,useParams,useSearchParams} from 'react-router-dom'
-import {ArrowRight,ArrowUpRight,BookOpen,ChevronRight,Compass,Download,FileText,Globe2,LifeBuoy,MapPin,Radio,Ship,Users,Waves} from 'lucide-react'
-import {assetUrl,params,useApi,type Config,type Item,type Page} from './api'
+import {Link,Navigate,useParams,useSearchParams} from 'react-router-dom'
+import {ArrowRight,ArrowUpRight,BookOpen,ChevronRight,Compass,Download,FileText,Globe2,LifeBuoy,MapPin,Radio,Rss,Ship,Users,Waves} from 'lucide-react'
+import {apiRoot,assetUrl,contentPath,journalImage,params,readMinutes,useApi,type Config,type Item,type Page} from './api'
 import {directory,faq,galleries,legalNote,legislativeRecord,mandates,milestones,name,nass,nimasa,npa,safety,sourceDocs,updates,type Resource} from './data'
 import {ApplicationStatus,IntakeForm,Newsletter} from './forms'
 import {Card,CmsCard,Eyebrow,FAQList,HomeHero,MandateIcon,Notice,PageHeader,Pagination,RichText,SearchField,SectionIntro,Share,StatusStrip,TextLink,prettyDate,useSeo} from './ui'
 
 const apiItems=(kind:string,count=50,q='',page=1,category='')=>'/content'+params({kind,limit:count,q,page,category})
 const galleryAlt=(name:string)=>name+' · illustrative image'
-const humanKind=(kind:string)=>({job:'Career opportunities',consultation:'Public consultation',video:'Video',gallery:'Gallery',page:'Public information',document:'Publication'}[kind]||kind)
+const humanKind=(kind:string)=>({job:'Career opportunities',consultation:'Public consultation',video:'Video',gallery:'Gallery',page:'Public information',document:'Publication',journal:'Maritime Journal'}[kind]||kind)
 const itemDate=(item:Item)=>item.event_date?prettyDate(item.event_date):'Date not provided'
 const sizeLabel=(bytes:number)=>bytes>=1048576?(bytes/1048576).toFixed(1)+' MB':Math.max(1,Math.round(bytes/1024))+' KB'
 
@@ -33,7 +33,7 @@ export function Home({config}:{config?:Config}){
   {custom.data?.items.map(item=><section key={item.id} className="section wrap"><SectionIntro title={item.title} copy={item.subtitle}/><RichText>{item.body}</RichText>{item.url&&<TextLink external to={item.url}>Read more</TextLink>}</section>)}
   <section className="section wrap news-section"><SectionIntro label="News and legislative updates" title="Follow the proposal" copy="Find legislative developments, source documents and public information." action={<TextLink to="/news">Visit the newsroom</TextLink>}/>
     <div className="three-grid">{news.data?.items.length?news.data.items.map(item=><CmsCard key={item.id} item={item}/>):updates.map(item=><Card key={item.slug} item={item} base="/news"/>)}
-      <aside className="quick-resources"><BookOpen size={25}/><h3>Public resources</h3><Link to="/documents">Document library <ChevronRight size={16}/></Link><Link to="/safety">Maritime safety guides <ChevronRight size={16}/></Link><Link to="/emergency">Emergency information <ChevronRight size={16}/></Link></aside>
+      <aside className="quick-resources"><BookOpen size={25}/><h3>Public resources</h3><Link to="/journal">Maritime Journal <ChevronRight size={16}/></Link><Link to="/documents">Document library <ChevronRight size={16}/></Link><Link to="/safety">Maritime safety guides <ChevronRight size={16}/></Link><Link to="/emergency">Emergency information <ChevronRight size={16}/></Link></aside>
     </div>
     {announcements.data?.items.length? <div className="three-grid announcements">{announcements.data.items.map(item=><CmsCard key={item.id} item={item}/>)}</div>:null}
   </section>
@@ -103,26 +103,77 @@ export function StaticArticle({type}:{type:'safety'|'news'}){
     <p>{item.body}</p>{item.source&&<TextLink external to={item.source}>Read the source guidance</TextLink>}<Share title={item.title}/>
   </div><div className="section wrap"><SectionIntro title="Related information"/><div className="three-grid">{options.filter(entry=>entry.slug!==slug).slice(0,3).map(entry=><Card key={entry.slug} item={entry} base={'/'+type}/>)}</div></div></>
 }
-export function CmsDetail(){
-  const {kind,slug}=useParams()
+export function CmsDetail({journal=false}:{journal?:boolean}){
+  const route=useParams()
+  const {slug}=route
+  const kind=journal?'journal':route.kind
   const {data:item,status,loading,error}=useApi<Item>('/content/'+encodeURIComponent(kind||'')+'/'+encodeURIComponent(slug||''))
-  const related=useApi<Page<Item>>(item?apiItems(item.kind,4,'',1,item.category):null)
-  useSeo(item?.seo_title||item?.title||'Public Information',item?.seo_description||item?.subtitle||legalNote,!item,item?.image_id?assetUrl(item.image_id):undefined)
-  if(loading&&!item)return <div className="section wrap">Loading content…</div>
+  const related=useApi<Page<Item>>(item?apiItems(item.kind,4,'',1,journal?'':item.category):null)
+  useSeo(item?.seo_title||item?.title||'Public Information',item?.seo_description||item?.subtitle||legalNote,!item,item&&journal?journalImage(item):item?.image_id?assetUrl(item.image_id):undefined)
+  if(kind==='journal'&&!journal&&slug)return <Navigate replace to={contentPath({kind,slug})}/>
+  if(loading)return <div className="section wrap">Loading content…</div>
   if(status===404)return <Missing/>
   if(!item)return <section className="section wrap"><Notice>{error||'This content is currently unavailable.'}</Notice></section>
   return <><PageHeader eyebrow={item.category||humanKind(item.kind)} title={item.title} copy={item.subtitle}/>
     <article className="section wrap narrow">
-      <p className="card-kicker">{[item.author,item.published_at&&prettyDate(item.published_at)].filter(Boolean).join(' · ')}</p>
+      {journal&&<p><Link to="/journal">← Back to the Maritime Journal</Link></p>}
+      <p className="card-kicker">{[item.author,item.published_at&&prettyDate(item.published_at),journal&&readMinutes(item.body)+' min read'].filter(Boolean).join(' · ')}</p>
       {item.image_id&&<img className="feature-image" src={assetUrl(item.image_id)} alt=""/>}
       <RichText>{item.body}</RichText>
       {item.deadline&&<p><strong>Submission deadline</strong> {new Date(item.deadline).toLocaleString('en-NG',{timeZone:'Africa/Lagos',timeZoneName:'short'})}</p>}
       {item.file_id&&<a className="button outline" href={assetUrl(item.file_id)}><Download size={18}/> Download PDF {item.file_size?'· '+sizeLabel(item.file_size):''}</a>}
       {item.url&&<TextLink external to={item.url}>{item.kind==='video'?'Watch video':'Open related resource'}</TextLink>}
-      {item.tags.length>0&&<p className="tags">{item.tags.map(tag=><Link key={tag} to={'/search?q='+encodeURIComponent(tag)}>{tag}</Link>)}</p>}
+      {item.tags.length>0&&<p className="tags">{item.tags.map(tag=><Link key={tag} to={journal?'/journal'+params({tag}):'/search?q='+encodeURIComponent(tag)}>{tag}</Link>)}</p>}
       {['consultation','job'].includes(item.kind)?<IntakeForm item={item}/>:<Share title={item.title}/>}
     </article>
-    {related.data?.items.some(other=>other.id!==item.id)&&<section className="section wrap"><SectionIntro title="Related information"/><div className="three-grid">{related.data.items.filter(other=>other.id!==item.id).slice(0,3).map(other=><CmsCard key={other.id} item={other}/>)}</div></section>}
+    {related.data?.items.some(other=>other.id!==item.id)&&<section className="section wrap"><SectionIntro title={journal?"More from the journal":"Related information"}/><div className="three-grid">{related.data.items.filter(other=>other.id!==item.id).slice(0,3).map(other=><CmsCard key={other.id} item={other}/>)}</div></section>}
+  </>
+}
+const journalDescription='Explainers, perspectives and practical public information on Nigeria’s maritime future.'
+export function Journal(){
+  const [query,setQuery]=useSearchParams()
+  const q=(query.get('q')||'').trim().slice(0,120)
+  const category=(query.get('category')||'').trim().slice(0,80)
+  const tag=(query.get('tag')||'').trim().slice(0,40)
+  const page=Math.max(1,Math.min(1000,Math.floor(Number(query.get('page'))||1)))
+  const limit=9
+  const filtered=Boolean(q||category||tag)
+  const clear=!filtered&&page===1
+  const articles=useApi<Page<Item>>('/content'+params({kind:'journal',q,category,tag,page,limit}))
+  const topics=useApi<{categories:string[];tags:string[]}>('/journal/topics')
+  const items=articles.loading?[]:articles.data?.items||[]
+  const [feature,...rest]=items
+  const highlight=clear&&items.length>0
+  const change=(values:Partial<{q:string;category:string;tag:string;page:number}>)=>{
+    const next={q,category,tag,page:1,...values}
+    setQuery(params({...next,page:next.page>1?next.page:undefined}))
+  }
+  const available=(items:string[],selected:string)=>Array.from(new Set([...items,...(selected?[selected]:[])]))
+  useSeo('Maritime Journal',journalDescription,false,'/media/gulf.webp')
+  return <><PageHeader eyebrow="Editorial and public information" title="Maritime Journal" copy={journalDescription} image="gulf"/>
+    <section className="section wrap">
+      {highlight&&<article className="mandate-detail">
+        <Link to={contentPath(feature)} tabIndex={-1} aria-hidden><img src={journalImage(feature)} alt=""/></Link>
+        <div>
+          <p className="card-kicker">{feature.category||'Maritime Journal'} · {readMinutes(feature.body)} min read</p>
+          <h2>{feature.title}</h2>
+          {feature.subtitle&&<p>{feature.subtitle}</p>}
+          <TextLink to={contentPath(feature)}>Read featured article</TextLink>
+        </div>
+      </article>}
+      <SectionIntro title={filtered?'Search the journal':'Journal archive'} action={<a className="text-link" href={apiRoot+'/journal/feed.xml'}><Rss size={17}/> RSS feed</a>}/>
+      <SearchField key={q} label="Search the journal" initial={q} onSearch={value=>change({q:value})} placeholder="Search articles"/>
+      <div className="filter-row">
+        <label className="inline-field">Category<select value={category} onChange={event=>change({category:event.target.value})}><option value="">All categories</option>{available(topics.data?.categories||[],category).map(value=><option key={value}>{value}</option>)}</select></label>
+        <label className="inline-field">Topic<select value={tag} onChange={event=>change({tag:event.target.value})}><option value="">All topics</option>{available(topics.data?.tags||[],tag).map(value=><option key={value}>{value}</option>)}</select></label>
+        {filtered&&<Link className="chip" to="/journal">Clear filters</Link>}
+      </div>
+      {articles.loading?<p role="status">Loading journal articles…</p>:articles.error?<Notice>The journal is temporarily unavailable. Please try again shortly.</Notice>:!items.length?<Notice>{filtered?'No articles match those filters.':'No articles on this page.'}</Notice>:<div className="three-grid">
+        {(highlight?rest:items).map(item=><CmsCard key={item.id} item={item}/>)}
+      </div>}
+      {articles.data&&<Pagination page={page} limit={limit} total={articles.data.total} setPage={value=>change({page:value})}/>}
+      {page>1&&!articles.loading&&!items.length&&<TextLink to="/journal">Return to the journal archive</TextLink>}
+    </section>
   </>
 }
 export function Documents(){
@@ -172,7 +223,7 @@ export function GlobalSearch(){
     <SearchField key={q} label="Search all public information" initial={q} onSearch={update}/>
     <div className="filter-row">{['legislation','maritime safety','recruitment'].map(value=><button key={value} className="chip" onClick={()=>update(value)}>{value}</button>)}</div>
     {q&&<label className="inline-field">Category<select value={category} onChange={e=>update(q,e.target.value)}><option value="">All categories</option>{Array.from(new Set([...index.map(item=>item.category),...(items.data?.items.map(item=>item.category).filter(Boolean)||[]),...(category?[category]:[])])).sort().map(value=><option key={value}>{value}</option>)}</select></label>}
-    {!q?<p>Enter a phrase to find guides, news, documents, FAQs and other published material.</p>:<><h2>Results for “{q}”</h2><ul className="search-results">{matches.map(item=><li key={item.url+'-'+item.title}><p className="card-kicker">{item.category}</p><TextLink to={item.url} external={item.url.startsWith('https:')}>{item.title}</TextLink></li>)}{items.data?.items.map(item=><li key={item.id}><p className="card-kicker">{item.category||item.kind}</p><TextLink to={'/content/'+item.kind+'/'+item.slug}>{item.title}</TextLink>{item.subtitle&&<p>{item.subtitle}</p>}</li>)}</ul>{!matches.length&&!items.data?.items.length&&<Notice>{items.loading?'Searching…':'No matching results. Try a broader phrase.'}</Notice>}{items.error&&<p role="status">Live search is temporarily unavailable. Website resources can still be searched.</p>}<Pagination page={page} total={items.data?.total||0} limit={10} setPage={number=>update(q,category,number)}/></>}
+    {!q?<p>Enter a phrase to find guides, news, documents, FAQs and other published material.</p>:<><h2>Results for “{q}”</h2><ul className="search-results">{matches.map(item=><li key={item.url+'-'+item.title}><p className="card-kicker">{item.category}</p><TextLink to={item.url} external={item.url.startsWith('https:')}>{item.title}</TextLink></li>)}{items.data?.items.map(item=><li key={item.id}><p className="card-kicker">{item.category||item.kind}</p><TextLink to={contentPath(item)}>{item.title}</TextLink>{item.subtitle&&<p>{item.subtitle}</p>}</li>)}</ul>{!matches.length&&!items.data?.items.length&&<Notice>{items.loading?'Searching…':'No matching results. Try a broader phrase.'}</Notice>}{items.error&&<p role="status">Live search is temporarily unavailable. Website resources can still be searched.</p>}<Pagination page={page} total={items.data?.total||0} limit={10} setPage={number=>update(q,category,number)}/></>}
   </section></>
 }
 export function Community(){

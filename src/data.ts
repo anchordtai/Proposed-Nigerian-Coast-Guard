@@ -10,13 +10,13 @@ export const proposedNotice = 'Awaiting legislative establishment'
 
 export const paths = [
   ['/about','About'], ['/mandate','Mandate'], ['/legislation','Legislation'],
-  ['/safety','Maritime Safety'], ['/news','Newsroom'],
+  ['/safety','Maritime Safety'], ['/news','Newsroom'], ['/journal','Journal'],
 ] as const
 
 export const directory = [
   ['/about','About the proposal'],['/mandate','Proposed mandate'],['/legislation','Legislative progress'],
   ['/safety','Maritime safety'],['/emergency','Emergency information'],['/community','Community resources'],
-  ['/news','Newsroom'],['/documents','Document library'],['/map','Maritime map'],['/faq','Frequently asked questions'],
+  ['/news','Newsroom'],['/journal','Maritime Journal'],['/documents','Document library'],['/map','Maritime map'],['/faq','Frequently asked questions'],
   ['/contact','Contact'],['/partnerships','Partnerships'],['/careers','Careers'],['/consultation','Consultations'],
   ['/privacy','Privacy'],['/gallery','Media gallery'],
 ] as const

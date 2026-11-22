@@ -93,7 +93,7 @@ export function registerPublic(app,{db,flags,limit,secret,send,frontendUrl,notif
     }).join('')
     res.type('application/rss+xml').send('<?xml version="1.0" encoding="UTF-8"?>'+
       '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Maritime Journal</title><link>'+home+
-      '</link><description>Articles from the Provisional Committee for the Establishment of the Nigerian Coast Guard (PCNCG)</description>'+
+      '</link><description>Articles from the Provisional Committee for the Establishment of the Nigerian Coast Guard (PC-NCG)</description>'+
       '<atom:link href="'+self+'" rel="self" type="application/rss+xml"/>'+items+'</channel></rss>')
   })
   app.get('/api/content/:kind/:slug',async (req,res) => {

@@ -28,7 +28,7 @@ export function useSeo(title:string,description:string,privatePage=false,image?:
 }
 
 export function Brand(){
-  return <Link className="brand" to="/" aria-label={name+' home'}><img src="/crest.webp" alt="" width="51" height="55"/><span><small>PROPOSED NIGERIAN</small><strong>COAST GUARD</strong></span></Link>
+  return <Link className="brand" to="/" aria-label={name+' home'}><img src="/crest.webp" alt="" width="51" height="55"/><span><small>Provisional Committee for the<br/>Establishment of the</small><strong>Nigerian Coast Guard <abbr title={name}>PCNCG</abbr></strong></span></Link>
 }
 const morePaths=directory.filter(([path])=>['/community','/emergency','/documents','/map','/gallery','/careers','/consultation','/partnerships','/faq'].includes(path))
 

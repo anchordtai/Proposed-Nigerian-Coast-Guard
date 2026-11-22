@@ -35,7 +35,8 @@ ul,ol{padding-left:1.25rem}
 .brand:hover{color:#fff}.brand img{border-radius:50%;width:47px;height:47px;object-fit:cover}
 .brand span{display:grid;gap:2px;line-height:1.05;letter-spacing:.025em}
 .brand small{color:var(--gold);font-size:.65rem;font-weight:700;letter-spacing:.13em}
-.brand strong{font-family:var(--display);font-size:1.12rem;font-weight:800;letter-spacing:.035em}
+.brand strong{font-family:var(--display);font-size:1rem;font-weight:800;letter-spacing:.01em}
+.brand abbr{font-size:.65em;color:var(--gold);text-decoration:none;margin-left:.25em}
 .nav-menu,.nav-actions{display:flex;align-items:center;gap:22px}.nav-menu{position:relative}
 .nav-menu>a,.nav-more{font-size:.9rem;text-decoration:none;color:#eaf0f1;white-space:nowrap;font-weight:600}
 .nav-menu>a:hover,.nav-menu>a.active,.nav-more:hover,.nav-more[aria-expanded=true]{color:var(--gold)}
@@ -191,7 +192,7 @@ th{background:#edf3ef}.table-actions{display:flex;gap:5px}
  .wrap{width:min(100% - 48px,1280px)}
  .nav-menu,.nav-actions{gap:13px}.nav-inner{gap:12px}.nav-menu>a,.nav-more{font-size:.84rem}
 }
-@media(max-width:870px){
+@media(max-width:1060px){
  .nav-inner{min-height:68px}
  .menu-toggle{display:grid}.header-contact{display:none}.nav-menu .mobile-contact{display:block}
  .nav-menu{display:none;position:absolute;left:0;right:0;top:100%;background:var(--navy);padding:10px 23px 18px;flex-direction:column;align-items:stretch;gap:4px;box-shadow:0 14px 28px #071b2950}
@@ -205,7 +206,7 @@ th{background:#edf3ef}.table-actions{display:flex;gap:5px}
  .wrap{width:calc(100% - 34px)}
  .status-inner{font-size:.68rem}.status-inner span,.status-inner a{gap:5px}
  .nav-inner{min-height:62px}.nav-actions{gap:7px}.icon-button{width:37px;height:37px}
- .brand img{width:41px;height:41px}.brand{gap:8px}.brand small{font-size:.55rem}.brand strong{font-size:.95rem}
+ .brand img{width:41px;height:41px}.brand{gap:8px}.brand small{font-size:.55rem}.brand strong{font-size:.83rem}
  .hero-inner{min-height:540px;padding-block:65px 13px}.hero-content h1{font-size:clamp(2.8rem,10.7vw,4.02rem)}
  .home-hero::after{background:linear-gradient(90deg,#051a2af2,#051a2a98 70%,#051a2a68),linear-gradient(0deg,#061a29e0,transparent 43%)}
  .hero-picture img{object-position:62% center}

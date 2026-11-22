@@ -1,6 +1,6 @@
 import {type ReactNode,useEffect,useId,useState} from 'react'
 import {Link,NavLink,useLocation,useNavigate} from 'react-router-dom'
-import {ArrowDown,ArrowRight,ArrowUpRight,ChevronDown,ChevronLeft,ChevronRight,Camera,Copy,Flag,Globe2,Info,LifeBuoy,Menu,MessageCircle,Pause,Play,Search,Share2,ShieldCheck,SquarePlay,Waves,X} from 'lucide-react'
+import {ArrowDown,ArrowRight,ArrowUpRight,ChevronDown,ChevronLeft,ChevronRight,Camera,Copy,Flag,Globe2,Info,LifeBuoy,Menu,MessageCircle,Pause,Play,Search,ShieldCheck,SquarePlay,Waves,X} from 'lucide-react'
 import Markdown from 'react-markdown'
 import {assetUrl,contentPath,journalImage,readMinutes,type Config,type Item} from './api'
 import {directory,faq,legalNote,name,paths,proposedNotice,type Resource} from './data'
@@ -48,10 +48,13 @@ export function Header({customMenu}:{customMenu:Item[]}){
   },[])
   return <>
     <a href="#main" className="skip">Skip to content</a>
-    <div className="statusbar"><div className="wrap status-inner"><span><i/> {proposedNotice}</span><div className="status-actions"><Link to="/legislation">Legislative status <ArrowUpRight size={13}/></Link><details className="header-share" onKeyDown={event=>{if(event.key==='Escape'&&event.currentTarget.open){event.currentTarget.open=false;event.currentTarget.querySelector('summary')?.focus()}}}>
-      <summary aria-label="Share the PC-NCG website"><Share2 size={15}/> <span>Share</span></summary>
-      <div className="share-panel"><p>Share the PC-NCG website</p><Share title={name} path="/" compact/></div>
-    </details></div></div></div>
+    <div className="statusbar"><div className="wrap status-inner">
+      <span className="status-message"><i/> {proposedNotice}</span>
+      <div className="status-actions">
+        <Link className="status-link" to="/legislation">Legislative status <ArrowUpRight size={13}/></Link>
+        <div className="status-social"><Share title={name} path="/" compact/></div>
+      </div>
+    </div></div>
     <header className="site-header"><div className="wrap nav-inner">
       <Brand/>
       <nav aria-label="Primary navigation" className={open?'nav-menu is-open':'nav-menu'}>

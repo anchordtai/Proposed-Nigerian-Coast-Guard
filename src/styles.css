@@ -25,10 +25,10 @@ ul,ol{padding-left:1.25rem}
 .skip{position:absolute;left:14px;top:8px;z-index:30;transform:translateY(-150%);background:white;color:var(--navy);padding:10px}
 .skip:focus{transform:none}
 .statusbar{background:#081924;color:#dfe8e8;font-size:.77rem;border-bottom:1px solid #ffffff15}
-.status-inner{height:34px;display:flex;align-items:center;justify-content:space-between;gap:10px}
-.status-inner span,.status-inner a{display:flex;align-items:center;gap:8px;line-height:1.15}
+.status-inner{min-height:43px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.status-message,.status-link{display:flex;align-items:center;gap:8px;line-height:1.15}
 .status-inner i{width:7px;height:7px;border:1px solid #9bddb4;border-radius:50%;background:#7fc195;box-shadow:0 0 0 3px #7fc19524;flex-shrink:0}
-.status-inner a{color:var(--gold);text-decoration:none}
+.status-link{color:var(--gold);text-decoration:none}
 .site-header{background:var(--navy);color:white;position:relative;z-index:10}
 .nav-inner{min-height:82px;display:flex;align-items:center;gap:22px;justify-content:space-between}
 .brand{display:inline-flex;gap:15px;align-items:center;text-decoration:none;color:#fff}
@@ -40,15 +40,12 @@ ul,ol{padding-left:1.25rem}
 .brand abbr{justify-self:start;border:1px solid #c3a66f70;border-radius:3px;padding:2px 5px;color:#f0d89f;font-size:.67rem;font-weight:800;letter-spacing:.09em;text-decoration:none}
 .site-header{background:linear-gradient(108deg,#102e40 0%,var(--navy) 51%);border-bottom:1px solid #d7bb763d}
 .nav-inner{min-height:110px}
-.status-actions,.header-share summary{display:flex;align-items:center;gap:9px}
-.status-actions{gap:15px}
-.header-share{position:relative;z-index:12}
-.header-share summary{color:var(--gold);cursor:pointer;list-style:none;padding:4px 0 4px 10px;border-left:1px solid #ffffff40}
-.header-share summary::-webkit-details-marker{display:none}
-.share-panel{position:absolute;top:calc(100% + 6px);right:0;min-width:270px;padding:14px;background:white;border:1px solid var(--border);border-radius:8px;color:var(--ink);box-shadow:0 12px 30px #0819243d}
-.share-panel p{margin-bottom:8px;font-weight:800}
-.status-inner .share-panel .social-icon{display:inline-grid;color:var(--green)}
-.status-inner .share-panel .social-icon:hover{color:white}
+.status-actions{display:flex;align-items:center;gap:13px}
+.status-social{position:relative;border-left:1px solid #ffffff40;padding-left:11px}
+.status-social .social-icon{width:31px;height:31px;border-color:#e5ce9352;background:#ffffff0c;color:#f5dda6}
+.status-social .social-icon:hover{background:var(--gold);color:var(--navy)}
+.status-social .share-feedback{position:absolute;z-index:12;right:0;top:calc(100% + 11px);min-width:106px;padding:7px 10px;border-radius:5px;background:var(--navy);color:white;text-align:center;box-shadow:0 3px 10px #0004}
+.status-social label.share-feedback{width:min(290px,82vw);text-align:left}
 .profile-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .nav-menu,.nav-actions{display:flex;align-items:center;gap:22px}.nav-menu{position:relative}
 .nav-menu>a,.nav-more{font-size:.9rem;text-decoration:none;color:#eaf0f1;white-space:nowrap;font-weight:600}
@@ -238,10 +235,10 @@ th{background:#edf3ef}.table-actions{display:flex;gap:5px}
 }
 @media(max-width:620px){
  .wrap{width:calc(100% - 34px)}
- .status-inner{font-size:.68rem}.status-inner span,.status-inner a{gap:5px}
+ .status-inner{font-size:.68rem;display:grid;grid-template-columns:auto auto;gap:7px;padding-block:7px}.status-message,.status-link{gap:5px}
+ .status-actions{display:contents}.status-link{justify-self:end}.status-social{grid-column:1/-1;border-left:0;padding-left:0}.status-social .share{justify-content:center}.status-social .social-icon{width:35px;height:35px}
  .nav-inner{min-height:92px}.nav-actions{gap:6px;flex:none}.icon-button{width:34px;height:36px}
  .brand img{width:44px;height:44px}.brand{gap:10px}.brand small{font-size:clamp(.65rem,2.35vw,.85rem)}.brand strong{font-size:clamp(1rem,4.2vw,1.45rem)}.brand abbr{font-size:.55rem}
- .status-actions{gap:6px}.header-share summary{padding-left:6px}.header-share summary span{display:none}
  .hero-inner{min-height:580px;padding-block:55px 13px}.hero-title{font-size:clamp(2.35rem,10vw,3.7rem)}
  .home-hero::after{background:linear-gradient(90deg,#051a2af2,#051a2a98 70%,#051a2a68),linear-gradient(0deg,#061a29e0,transparent 43%)}
  .hero-picture img{object-position:62% center}

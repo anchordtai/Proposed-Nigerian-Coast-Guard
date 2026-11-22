@@ -1,4 +1,4 @@
-# Proposed Nigerian Coast Guard public information platform
+# Provisional Committee for the Establishment of the Nigerian Coast Guard (PCNCG) public information platform
 
 A public information platform for the Provisional Committee. The proposed institution has no operational or recruitment authority on this site. The crest is a proposed design and the maritime photographs are illustrative. The project intentionally contains no vessel tracking, personnel database, patrol routes, emergency dispatch or tactical systems.
 

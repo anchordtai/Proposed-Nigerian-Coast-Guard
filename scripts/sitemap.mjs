@@ -8,6 +8,7 @@ const meta={
   '/legislation':['Legislative Journey','Source-linked legislative milestones and parliamentary records.'],
   '/safety':['Maritime Safety','Practical awareness and safety information for coastal communities.'],
   '/news':['Newsroom','Read legislative news, announcements and public statements.'],
+  '/journal':['Maritime Journal','Explainers, perspectives and practical public information on Nigeria’s maritime future.'],
   '/community':['Community Resources','Public safety resources for fishers, operators and coastal communities.'],
   '/documents':['Document Library','Find parliamentary records, public resources and maritime publications.'],
   '/emergency':['Maritime Emergency Information','Find guidance and links to established maritime authorities.'],
@@ -38,6 +39,7 @@ for(const [path,[title,description]] of Object.entries(meta)){
       '<meta name="twitter:title" content="'+heading+'"/>',
       '<meta name="twitter:description" content="'+desc+'"/>',
       '<meta name="twitter:image" content="'+htmlEscape(new URL('/media/maritime-hero.webp',site).href)+'"/>',
+      path==='/journal'?'<link rel="alternate" type="application/rss+xml" title="Maritime Journal" href="/api/journal/feed.xml"/>':'',
       path==='/'?'<script type="application/ld+json">'+JSON.stringify({'@context':'https://schema.org','@type':'WebSite',name:title,url:site.href})+'</script>':'',
       '</head>',
     ].join('\n    '))

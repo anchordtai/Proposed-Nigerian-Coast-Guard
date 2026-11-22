@@ -49,7 +49,7 @@ export async function transaction(db, work) {
 
 export async function bootstrap(db, rawEmail, rawPassword) {
   await seedRoles(db)
-  if (!rawEmail && !rawPassword) return
+  if (!rawPassword) return
   const {email, password} = userSchema.parse({email:rawEmail, password:rawPassword})
   await transaction(db, async client => {
     await client.query('SELECT pg_advisory_xact_lock(458292)')

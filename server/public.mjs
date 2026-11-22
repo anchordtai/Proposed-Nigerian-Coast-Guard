@@ -3,7 +3,7 @@ import { fileTypeFromBuffer } from 'file-type'
 import { z } from 'zod'
 import { digest, emailSchema, randomToken, transaction } from './access.mjs'
 
-export const kinds = ['page','article','news','press','advisory','statement','document','faq','announcement','milestone','gallery','video','consultation','job','menu','homepage','social']
+export const kinds = ['page','article','news','press','advisory','statement','document','faq','announcement','milestone','gallery','video','consultation','job','menu','homepage','social','journal']
 export const statuses = ['new','reviewed','in_progress','resolved','archived']
 export const categories = ['General enquiry','Maritime safety','Public information','Media enquiry','Legislative information','Partnership enquiry','Environmental concern','Other']
 export const published = "deleted_at IS NULL AND status='published' AND published_at<=now()"
@@ -16,6 +16,9 @@ export const paging = z.object({
   limit:z.coerce.number().int().min(1).max(50).default(12),
   q:z.string().trim().max(120).default(''),
   category:z.string().trim().max(80).default(''),
+})
+const journalFilters = paging.extend({
+  tag:z.string().trim().max(40).default(''),
 })
 const title = z.string().trim().min(2).max(180)
 const optional = max => z.string().trim().max(max).default('')
@@ -46,6 +49,9 @@ export class HttpError extends Error {
 }
 const disabled = (enabled,message) => { if (!enabled) throw new HttpError(403,message) }
 const textVector = "to_tsvector('english'::regconfig,title || ' ' || subtitle || ' ' || body || ' ' || category)"
+const escapeXml = value => value.replace(/[&<>"']/g, char => ({
+  '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&apos;',
+})[char]).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/g,'')
 const linkWithToken = (url, path, code) => new URL(path + '#token=' + encodeURIComponent(code),url).href
 
 export function registerPublic(app,{db,flags,limit,secret,send,frontendUrl,notifyTo,emailReady}) {
@@ -55,15 +61,40 @@ export function registerPublic(app,{db,flags,limit,secret,send,frontendUrl,notif
     res.json({...flags,settings:Object.fromEntries(rows.map(row => [row.key,row.value]))})
   })
   app.get('/api/content',async (req,res) => {
-    const {page,limit:count,q,category}=paging.parse(req.query)
+    const {page,limit:count,q,category,tag}=journalFilters.parse(req.query)
     const requested = z.enum(kinds).optional().parse(req.query.kind)
     if (requested && !visible.includes(requested)) return res.json({items:[],total:0,page})
     const publicKinds = kinds.filter(kind => !['menu','homepage','social','job','consultation'].includes(kind))
-    const params=[requested ? [requested] : publicKinds,q,category,count,(page-1)*count]
-    const where=published+" AND kind=ANY($1::text[]) AND ($2='' OR "+textVector+" @@ websearch_to_tsquery('english',$2) OR title ILIKE '%' || $2 || '%') AND ($3='' OR category=$3)"
-    const result=await db.query("SELECT "+pickContent+",(SELECT size FROM media WHERE id=content.file_id) AS file_size FROM content WHERE "+where+" ORDER BY CASE WHEN $2='' THEN position ELSE 0 END,published_at DESC,id LIMIT $4 OFFSET $5",params)
-    const total=await db.query("SELECT count(*)::integer AS count FROM content WHERE "+where,params.slice(0,3))
+    const params=[requested ? [requested] : publicKinds,q,category,tag,count,(page-1)*count]
+    const where=published+" AND kind=ANY($1::text[]) AND ($2='' OR "+textVector+" @@ websearch_to_tsquery('english',$2) OR strpos(lower(title),lower($2))>0 OR strpos(lower(array_to_string(tags,' ')),lower($2))>0) AND ($3='' OR category=$3) AND ($4='' OR tags @> ARRAY[$4]::text[])"
+    const result=await db.query("SELECT "+pickContent+",(SELECT size FROM media WHERE id=content.file_id) AS file_size FROM content WHERE "+where+" ORDER BY CASE WHEN $2='' THEN position ELSE 0 END,published_at DESC,id LIMIT $5 OFFSET $6",params)
+    const total=await db.query("SELECT count(*)::integer AS count FROM content WHERE "+where,params.slice(0,4))
     res.json({items:result.rows,total:total.rows[0].count,page})
+  })
+  app.get('/api/journal/topics',async (_req,res) => {
+    const where=published+" AND kind='journal'"
+    const {rows}=await db.query(
+      "SELECT 'category' AS type,category AS value FROM content WHERE "+where+" AND category<>'' GROUP BY category "+
+      "UNION ALL SELECT 'tag' AS type,t.value FROM content CROSS JOIN LATERAL unnest(tags) AS t(value) WHERE "+where+
+      " GROUP BY t.value ORDER BY value LIMIT 500",
+    )
+    res.json({categories:rows.filter(row=>row.type==='category').map(row=>row.value),
+      tags:rows.filter(row=>row.type==='tag').map(row=>row.value)})
+  })
+  app.get('/api/journal/feed.xml',async (_req,res) => {
+    const {rows}=await db.query("SELECT slug,title,subtitle,published_at FROM content WHERE "+published+
+      " AND kind='journal' ORDER BY published_at DESC,id LIMIT 25")
+    const home=escapeXml(new URL('/journal',frontendUrl).href)
+    const self=escapeXml(new URL('/api/journal/feed.xml',frontendUrl).href)
+    const items=rows.map(row=>{
+      const url=escapeXml(new URL('/journal/'+row.slug,frontendUrl).href)
+      return '<item><title>'+escapeXml(row.title)+'</title><link>'+url+'</link><guid>'+url+'</guid>'+
+        '<description>'+escapeXml(row.subtitle)+'</description><pubDate>'+new Date(row.published_at).toUTCString()+'</pubDate></item>'
+    }).join('')
+    res.type('application/rss+xml').send('<?xml version="1.0" encoding="UTF-8"?>'+
+      '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Maritime Journal</title><link>'+home+
+      '</link><description>Articles from the Proposed Nigerian Coast Guard</description>'+
+      '<atom:link href="'+self+'" rel="self" type="application/rss+xml"/>'+items+'</channel></rss>')
   })
   app.get('/api/content/:kind/:slug',async (req,res) => {
     const kind=z.enum(kinds).parse(req.params.kind)

@@ -2,7 +2,7 @@ import { readFile, mkdir, writeFile } from 'node:fs/promises'
 
 const site=new URL(process.env.VITE_SITE_URL||process.env.VERCEL_PROJECT_PRODUCTION_URL&&'https://'+process.env.VERCEL_PROJECT_PRODUCTION_URL||'https://proposed-nigerian-coast-guard.vercel.app')
 const meta={
-  '/':['Provisional Committee for the Establishment of the Nigerian Coast Guard (PCNCG)','Explore the proposed mandate, legislative journey and maritime safety resources for Nigeria.'],
+  '/':['Provisional Committee for the Establishment of the Nigerian Coast Guard (PC-NCG)','Explore the proposed mandate, legislative journey and maritime safety resources for Nigeria.'],
   '/about':['About the Proposal','Background, proposed mission, vision and responsibilities.'],
   '/mandate':['Proposed Mandate','Proposed maritime safety, rescue and environmental responsibilities.'],
   '/legislation':['Legislative Journey','Source-linked legislative milestones and parliamentary records.'],
@@ -25,7 +25,7 @@ const meta={
 const template=await readFile('dist/index.html','utf8')
 const htmlEscape=value=>value.replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;')
 for(const [path,[title,description]] of Object.entries(meta)){
-  const heading=htmlEscape(path==='/'?title:title+' | Provisional Committee for the Establishment of the Nigerian Coast Guard (PCNCG)')
+  const heading=htmlEscape(path==='/'?title:title+' | Provisional Committee for the Establishment of the Nigerian Coast Guard (PC-NCG)')
   const canonical=htmlEscape(new URL(path,site).href)
   const desc=htmlEscape(description)
   const html=template.replace(/<title>[^<]*<\/title>/, '<title>'+heading+'</title>')

@@ -19,13 +19,15 @@ before(async ()=>{
   const {rows}=await sql.query('SELECT 1 AS ready')
   assert.equal(rows[0].ready,1)
   const query=async(text,values)=>{
-    if (text.includes('CREATE TABLE users')) return await sql.exec(text)
+    if (text.includes(';\n')) return await sql.exec(text)
     const result=await sql.query(text,values)
     return {...result,rowCount:result.affectedRows||result.rows.length}
   }
   db={query,connect:async()=>({query,release(){}})}
   await migrate(db)
   await migrate(db)
+  await bootstrap(db,email)
+  assert.equal((await db.query('SELECT count(*)::integer AS total FROM users')).rows[0].total,0)
   await bootstrap(db,email,password)
   server=createApp(db,env,async(to,subject,text)=>{sent.push({to,subject,text})}).listen(0,'127.0.0.1')
   await new Promise(resolve=>server.once('listening',resolve))
@@ -94,6 +96,39 @@ test('drafts, scheduled publication, search and scope-gated jobs',async()=>{
   assert.equal((await call('/admin/content',{method:'POST',cookie:admin,body:{kind:'job',slug:'test-job',title:'Test job',status:'published',deadline:'2099-01-01T00:00:00.000Z'}})).status,403)
   assert.equal((await call('/admin/content/bulk',{method:'POST',cookie:admin,body:{ids:[id],status:'archived'}})).status,200)
   assert.equal((await call('/content/article/coastal-safety')).status,404)
+})
+test('journal filters, paging and RSS use only published postings',async()=>{
+  const slug='journal-test'
+  const values={kind:'journal',slug,title:'Coast & <harbour>',subtitle:'Reader’s notes about the coast',
+    body:'A sample public journal entry.',category:'Test journal category',tags:['Field notes']}
+  assert.equal((await call('/admin/content',{method:'POST',cookie:editor,body:values})).status,403)
+  const saved=await call('/admin/content',{method:'POST',cookie:admin,body:values})
+  assert.equal(saved.status,201,JSON.stringify(saved.payload))
+  const id=saved.payload.id
+  const find='/content?kind=journal&tag=Field+notes&category=Test+journal+category'
+  assert.equal((await call(find)).payload.total,0)
+  assert.equal((await call('/content/journal/'+slug)).status,404)
+  assert.ok(!(await call('/journal/topics')).payload.tags.includes('Field notes'))
+  assert.doesNotMatch((await call('/journal/feed.xml')).payload,/journal-test/)
+  const publish=body=>call('/admin/content/'+id,{method:'PUT',cookie:admin,body:{...values,status:'published',...body}})
+  assert.equal((await publish({published_at:'2099-01-01T00:00:00.000Z'})).status,200)
+  assert.equal((await call(find)).payload.total,0)
+  assert.equal((await publish({})).status,200)
+  const result=await call(find)
+  assert.equal(result.payload.total,1)
+  assert.equal(result.payload.items[0].slug,slug)
+  assert.equal((await call(find+'&page=2')).payload.items.length,0)
+  assert.equal((await call('/content?q=Field+notes')).payload.items[0].slug,slug)
+  const topics=await call('/journal/topics')
+  assert.ok(topics.payload.tags.includes('Field notes'))
+  assert.ok(topics.payload.categories.includes('Test journal category'))
+  const feed=await call('/journal/feed.xml')
+  assert.match(feed.headers.get('content-type'),/^application\/rss\+xml/)
+  assert.match(feed.payload,/Coast &amp; &lt;harbour&gt;/)
+  assert.match(feed.payload,/http:\/\/localhost:5173\/journal\/journal-test/)
+  assert.equal((await call('/admin/content/'+id,{method:'DELETE',cookie:admin})).status,204)
+  assert.equal((await call('/content/journal/'+slug)).status,404)
+  assert.doesNotMatch((await call('/journal/feed.xml')).payload,/journal-test/)
 })
 test('upload restrictions, private file authorization, document publishing and download count',async()=>{
   const fake=new FormData()
